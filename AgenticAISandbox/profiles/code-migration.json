@@ -1,0 +1,56 @@
+{
+  "name": "code-migration",
+  "description": "Multi-step code migration between languages/frameworks: source analysis, migration plan, code generation, and validation",
+  "contextPrompts": [
+    {
+      "key": "from",
+      "prompt": "Source language and framework (e.g., Java/Spring Boot):"
+    },
+    {
+      "key": "to",
+      "prompt": "Target language and framework (e.g., Kotlin/Ktor):"
+    }
+  ],
+  "steps": [
+    {
+      "id": "source-analysis",
+      "name": "Source Code Analysis",
+      "systemPrompt": "You are an expert software architect with deep knowledge of both {{from}} and {{to}}. Analyze code thoroughly before any migration work begins.",
+      "userPromptTemplate": "Analyze this {{from}} code in preparation for migrating it to {{to}}.\n\nIdentify and document:\n1. Key patterns, idioms, and design patterns in use\n2. External dependencies and their {{to}} equivalents (or closest alternatives)\n3. Language/framework-specific features that need special handling\n4. Potential migration challenges, risks, and areas requiring extra care\n5. Estimated complexity (Low / Medium / High) with justification\n\nCode:\n```\n{{input}}\n```",
+      "outputKey": "source-analysis"
+    },
+    {
+      "id": "migration-plan",
+      "name": "Migration Plan",
+      "systemPrompt": "You are an expert in migrating codebases from {{from}} to {{to}}. You create detailed, actionable migration plans that minimize risk and preserve all behavior.",
+      "userPromptTemplate": "Based on this analysis of the {{from}} code:\n\n{{step_source-analysis}}\n\nCreate a detailed migration plan to {{to}} covering:\n1. **Dependency mapping** — {{from}} libraries → {{to}} equivalents with version recommendations\n2. **Idiom transformations** — key language/framework patterns and their {{to}} equivalents\n3. **API/framework differences** — specific areas that need attention\n4. **Step-by-step migration approach** — ordered list of what to migrate first\n5. **Testing strategy** — how to verify the migration is correct and complete",
+      "outputKey": "migration-plan"
+    },
+    {
+      "id": "code-generation",
+      "name": "Code Generation",
+      "systemPrompt": "You are an expert {{to}} developer. You write idiomatic, production-quality {{to}} code. You never omit logic, and you always preserve the full behavior of the original.",
+      "userPromptTemplate": "Migrate the following {{from}} code to {{to}}.\n\nMigration plan to follow:\n{{step_migration-plan}}\n\nOriginal {{from}} code:\n```\n{{input}}\n```\n\nRequirements:\n- Preserve ALL business logic exactly — do not simplify or skip anything\n- Use idiomatic {{to}} patterns and conventions throughout\n- Replace every {{from}} dependency with its proper {{to}} equivalent\n- Include all required imports, configuration, and boilerplate\n- Add brief inline comments where the migration is non-obvious or a direct equivalent does not exist",
+      "outputKey": "code-generation"
+    },
+    {
+      "id": "validation",
+      "name": "Migration Validation",
+      "systemPrompt": "You are an expert in both {{from}} and {{to}}. Your job is to rigorously validate that a migration is correct, complete, and idiomatic — catching anything the code generator may have missed.",
+      "userPromptTemplate": "Validate this migration from {{from}} to {{to}}.\n\n**Original {{from}} code:**\n```\n{{input}}\n```\n\n**Migrated {{to}} code:**\n```\n{{step_code-generation}}\n```\n\nVerify and report on:\n1. **Logic parity** — is all business logic faithfully preserved? Flag any discrepancies.\n2. **Syntactic correctness** — is the {{to}} code valid and compilable?\n3. **Idiomatic quality** — does the code follow {{to}} conventions and best practices?\n4. **Completeness** — are there missing imports, configuration, error handling, or edge cases?\n5. **Corrections** — provide any required fixes as diff-style snippets\n6. **Confidence rating** — High / Medium / Low with explanation",
+      "outputKey": "validation"
+    }
+  ],
+  "modelPreferences": {
+    "default": [
+      { "provider": "anthropic", "model": "claude-opus-4-6" },
+      { "provider": "openai",    "model": "gpt-4o" }
+    ],
+    "stepOverrides": {
+      "code-generation": [
+        { "provider": "anthropic", "model": "claude-sonnet-4-6" },
+        { "provider": "openai",    "model": "gpt-4o-mini" }
+      ]
+    }
+  }
+}

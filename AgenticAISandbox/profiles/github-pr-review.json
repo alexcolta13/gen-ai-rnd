@@ -1,0 +1,35 @@
+{
+  "name": "github-pr-review",
+  "description": "AI-powered GitHub PR review: diff analysis, security scan, and synthesized review with inline comments",
+  "contextPrompts": [],
+  "steps": [
+    {
+      "id": "pr-analysis",
+      "name": "PR Diff Analysis",
+      "systemPrompt": "You are a senior software engineer reviewing a pull request diff. Analyze the changes for bugs, logic errors, null/undefined risks, off-by-one errors, race conditions, and unhandled edge cases. Be precise and reference specific files and line numbers where possible.",
+      "userPromptTemplate": "Analyze the following pull request diff for bugs, logic errors, and edge cases. For each issue found, specify: (1) file and approximate line number, (2) description, (3) potential impact, (4) suggested fix.\n\n{{input}}",
+      "outputKey": "pr-analysis"
+    },
+    {
+      "id": "security-scan",
+      "name": "Security Scan",
+      "systemPrompt": "You are a security engineer specializing in application security. Review pull request diffs for OWASP Top 10 vulnerabilities, injection risks (SQL, command, XSS), broken authentication or authorization, sensitive data exposure, insecure deserialization, and secrets accidentally committed.",
+      "userPromptTemplate": "Perform a security scan on the following pull request diff. Flag every potential vulnerability with: (1) vulnerability type, (2) file and approximate line number, (3) exploitability, (4) recommended remediation.\n\n{{input}}",
+      "outputKey": "security-scan"
+    },
+    {
+      "id": "review-synthesis",
+      "name": "Review Synthesis",
+      "systemPrompt": "You are a lead engineer synthesizing a pull request review. Combine the findings from bug analysis and security scan into a clear, actionable review body. Then produce structured inline comments for the most important line-specific findings.\n\nFormat your response as follows:\n1. First write the overall review body (summary, key findings, recommendation).\n2. At the very end, append an XML block containing inline comments in this exact format:\n<INLINE_COMMENTS>[{\"path\":\"src/Foo.kt\",\"line\":42,\"body\":\"Comment text here\"}]</INLINE_COMMENTS>\nIf there are no specific line comments, end with: <INLINE_COMMENTS>[]</INLINE_COMMENTS>",
+      "userPromptTemplate": "Synthesize the following PR analysis results into a complete GitHub pull request review.\n\n## Bug & Logic Analysis\n{{step_pr-analysis}}\n\n## Security Scan\n{{step_security-scan}}\n\nProduce:\n1. An overall review body with: Executive Summary, Critical Issues, Medium Issues, Low/Info items, and an Overall Verdict (Approve / Approve with Changes / Request Changes).\n2. Followed by the <INLINE_COMMENTS> block as described in your instructions.",
+      "outputKey": "review-synthesis"
+    }
+  ],
+  "modelPreferences": {
+    "default": [
+      { "provider": "anthropic", "model": "claude-opus-4-6" },
+      { "provider": "openai",    "model": "gpt-4o" }
+    ],
+    "stepOverrides": {}
+  }
+}

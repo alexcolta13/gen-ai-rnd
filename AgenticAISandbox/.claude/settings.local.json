@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"C:\\\\Users\\\\alexc\\\\Documents\\\\Projects\\\\alex13\\\\AgenticAISandbox\" && mvn clean)"
+    ]
+  }
+}
